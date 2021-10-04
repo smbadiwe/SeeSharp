@@ -28,6 +28,12 @@ export function activate(context: vscode.ExtensionContext): void {
         async (args: any) => await promptAndSave(args, 'controller')));
     context.subscriptions.push(vscode.commands.registerCommand('csharpextensions.createApiController',
         async (args: any) => await promptAndSave(args, 'apicontroller')));
+    context.subscriptions.push(vscode.commands.registerCommand('csharpextensions.createPage',
+        async (args: any) => await promptAndSave(args, 'page')));
+    context.subscriptions.push(vscode.commands.registerCommand('csharpextensions.createUserControl',
+        async (args: any) => await promptAndSave(args, 'usercontrol')));
+    context.subscriptions.push(vscode.commands.registerCommand('csharpextensions.createResourceFile',
+        async (args: any) => await promptAndSave(args, 'apicontroller')));
 
     const codeActionProvider = new CodeActionProvider();
     const disposable = vscode.languages.registerCodeActionsProvider(documentSelector, codeActionProvider);

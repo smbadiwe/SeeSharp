@@ -22,7 +22,10 @@
         "onCommand:csharpextensions.createEnum",
         "onCommand:csharpextensions.createInterface",
         "onCommand:csharpextensions.createController",
-        "onCommand:csharpextensions.createApiController"
+        "onCommand:csharpextensions.createApiController",
+        "onCommand:csharpextensions.createPage",
+        "onCommand:csharpextensions.createUserControl",
+        "onCommand:csharpextensions.createResourceFile"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -52,6 +55,18 @@
             {
                 "command": "csharpextensions.createApiController",
                 "title": "Api Controller"
+            },
+            {
+                "command": "csharpextensions.createPage",
+                "title": "UWP Page"
+            },
+            {
+                "command": "csharpextensions.createUserControl",
+                "title": "UWP UserControl"
+            },
+            {
+                "command": "csharpextensions.createResourceFile",
+                "title": "UWP Resource File"
             }
         ],
         "menus": {
@@ -75,6 +90,18 @@
                 {
                     "group": "mvc@1",
                     "command": "csharpextensions.createApiController"
+                },
+                {
+                    "group": "uwp@0",
+                    "command": "csharpextensions.createPage"
+                },
+                {
+                    "group": "uwp@1",
+                    "command": "csharpextensions.createUserControl"
+                },
+                {
+                    "group": "uwp@2",
+                    "command": "csharpextensions.createResourceFile"
                 }
             ],
             "explorer/context": [
