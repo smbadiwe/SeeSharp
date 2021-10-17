@@ -1,7 +1,7 @@
 {
     "name": "seesharp",
-    "displayName": "C# Extensions",
-    "description": "C# IDE Extensions for VSCode",
+    "displayName": "SeeSharp",
+    "description": "SeeSharp: C# IDE Extensions for VSCode",
     "author": "Soma Mbadiwe",
     "license": "MIT",
     "version": "1.4.3",
@@ -195,7 +195,7 @@
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "pretest": "yarn run compile && yarn run lint",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint src --fix --ext ts",
         "test": "node ./out/test/runTest.js"
     },
     "devDependencies": {

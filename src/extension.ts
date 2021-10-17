@@ -4,19 +4,19 @@ import { ShellRuns, Templating } from './commands';
 
 const newProjectCommands = {
     // <command>: [<project type>, <comand prefix>]
-    "seesharp.createClassLibrary": ['Class Library', 'dotnet new classlib -o'],
-    "seesharp.createConsoleApp": ['Console Application', 'dotnet new console -o'],
-    "seesharp.createWebApi": ['ASP.NET Core Web API', 'dotnet new webapi -o'],
-    "seesharp.createXUnit": ['xUnit Test Project', 'dotnet new xunit -o'],
+    'seesharp.createClassLibrary': ['Class Library', 'dotnet new classlib -o'],
+    'seesharp.createConsoleApp': ['Console Application', 'dotnet new console -o'],
+    'seesharp.createWebApi': ['ASP.NET Core Web API', 'dotnet new webapi -o'],
+    'seesharp.createXUnit': ['xUnit Test Project', 'dotnet new xunit -o'],
 };
 
 const templateArgs = {
     // <command>: <file type>
-    "seesharp.createClass": 'Class',
-    "seesharp.createInterface": 'Interface',
-    "seesharp.createEnum": 'Enum',
-    "seesharp.createController": 'Controller',
-    "seesharp.createApiController": 'ApiController',
+    'seesharp.createClass': 'Class',
+    'seesharp.createInterface': 'Interface',
+    'seesharp.createEnum': 'Enum',
+    'seesharp.createController': 'Controller',
+    'seesharp.createApiController': 'ApiController',
 };
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -59,7 +59,7 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void { 
-    const extensionTerminals = vscode.window.terminals?.filter(t => t.name === "SeeSharp");
+    const extensionTerminals = vscode.window.terminals?.filter(t => t.name === 'SeeSharp');
     if (extensionTerminals) {
         for (let i = 0; i < extensionTerminals.length; i++) {
             extensionTerminals[i].dispose();

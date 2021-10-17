@@ -5,7 +5,7 @@ import ProjectJsonReader from './projectJsonReader';
 import * as findupglob from 'find-up-glob';
 
 export async function findUp(pattern: string, options: Object) {
-    const files = await findupglob(pattern, options)
+    const files = await findupglob(pattern, options);
     if (files && files.length > 0) {
         return files[0];
     }
