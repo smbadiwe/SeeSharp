@@ -13,7 +13,7 @@ describe("CsprojReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, "Xamarin.Forms");
+        assert.strictEqual(actual, "Xamarin.Forms");
     });
 
     it("getNamespace for valid csproj file with RootNamespace attribute in the third PropertyGroup should return System.Linq", () => {
@@ -29,7 +29,7 @@ describe("CsprojReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, "System.Linq");
+        assert.strictEqual(actual, "System.Linq");
     });
 
     it("getNamespace for valid csproj file without RootNamespace attribute should return undefined", () => {
@@ -42,7 +42,7 @@ describe("CsprojReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
     });
 
     it("getNamespace for valid csproj file without PropertyGroup attribute should return undefined", () => {
@@ -51,7 +51,7 @@ describe("CsprojReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
     });
 
     it("getNamespace for invalid csproj file should return undefined", () => {
@@ -60,6 +60,6 @@ describe("CsprojReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
     });
 });

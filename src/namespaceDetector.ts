@@ -11,13 +11,6 @@ export async function findUp(pattern: string, options: Object) {
     }
 
     return null;
-    // return await findUp(async (directory: string) => {
-    //     var files = await glob(directory + '/' + pattern);  //
-    //     if (files && files.length > 0) {
-    //         return undefined; // path.join(directory, files[0]);
-    //     }
-    //     return undefined;
-    // }, options);
 }
 
 export default class NamespaceDetector {

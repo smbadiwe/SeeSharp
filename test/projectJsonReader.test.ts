@@ -8,7 +8,7 @@ describe("ProjectJsonReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, "Xamarin.Forms");
+        assert.strictEqual(actual, "Xamarin.Forms");
     });
 
     it("getNamespace for valid project.json without defaultNamespace attribute should return undefined", () => {
@@ -17,7 +17,7 @@ describe("ProjectJsonReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
     });
 
     it("getNamespace for valid project.json without tooling attribute should return undefined", () => {
@@ -26,7 +26,7 @@ describe("ProjectJsonReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
     });
 
     it("getNamespace for invalid project.json should return undefined", () => {
@@ -35,6 +35,6 @@ describe("ProjectJsonReader", () => {
 
         const actual = detector.getRootNamespace();
 
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
     });
 });

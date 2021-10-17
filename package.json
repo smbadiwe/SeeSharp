@@ -213,7 +213,6 @@
     },
     "dependencies": {
         "find-up-glob": "^1.0.0",
-        "tiny-glob": "^0.2.9",
         "xml2js": "^0.4.23"
     }
 }
