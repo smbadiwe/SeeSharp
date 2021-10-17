@@ -4,6 +4,22 @@ import CsprojReader from './csprojReader';
 import ProjectJsonReader from './projectJsonReader';
 import * as findupglob from 'find-up-glob';
 
+export async function findUp(pattern: string, options: Object) {
+    const files = await findupglob(pattern, options)
+    if (files && files.length > 0) {
+        return files[0];
+    }
+
+    return null;
+    // return await findUp(async (directory: string) => {
+    //     var files = await glob(directory + '/' + pattern);  //
+    //     if (files && files.length > 0) {
+    //         return undefined; // path.join(directory, files[0]);
+    //     }
+    //     return undefined;
+    // }, options);
+}
+
 export default class NamespaceDetector {
     private readonly filePath: string;
 
@@ -24,15 +40,14 @@ export default class NamespaceDetector {
 
         return await this.fromFilepath();
     }
-
+    
     private async fromCsproj(): Promise<string | undefined> {
-        const csprojs: string[] = await findupglob('*.csproj', { cwd: path.dirname(this.filePath) });
+        const csprojFile = await findUp('*.csproj', { cwd: path.dirname(this.filePath) });
 
-        if (csprojs === null || csprojs.length < 1) {
+        if (!csprojFile) {
             return undefined;
         }
 
-        const csprojFile = csprojs[0];
         const fileContent = await this.read(Uri.file(csprojFile));
         const projectReader = new CsprojReader(fileContent);
         const rootNamespace = await projectReader.getRootNamespace();
@@ -45,13 +60,12 @@ export default class NamespaceDetector {
     }
 
     private async fromProjectJson(): Promise<string | undefined> {
-        const jsonFiles: string[] = await findupglob('project.json', { cwd: path.dirname(this.filePath) });
+        const projectJsonFile = await findUp('project.json', { cwd: path.dirname(this.filePath) });
 
-        if (jsonFiles === null || jsonFiles.length < 1) {
+        if (!projectJsonFile) {
             return undefined;
         }
 
-        const projectJsonFile = jsonFiles[0];
         const projectJsonDir = path.dirname(projectJsonFile);
         const fileContent = await this.read(Uri.file(projectJsonFile));
         const projectReader = new ProjectJsonReader(fileContent);
@@ -63,20 +77,20 @@ export default class NamespaceDetector {
 
         return this.calculateFullNamespace(rootNamespace, projectJsonDir);
     }
-
+    
     private async getRootPath(): Promise<string> {
-        const csprojs: string[] = await findupglob('*.csproj', { cwd: path.dirname(this.filePath) });
+        const csproj = await findUp('*.csproj', { cwd: path.dirname(this.filePath) });
 
-        if (csprojs !== null && csprojs.length >= 1) {
-            const csprojSplit = csprojs[0].split(path.sep);
+        if (csproj) {
+            const csprojSplit = csproj.split(path.sep);
 
             return csprojSplit.slice(0, csprojSplit.length - 2).join(path.sep);
         }
 
-        const jsonFiles: string[] = await findupglob('project.json', { cwd: path.dirname(this.filePath) });
+        const jsonFile = await findUp('project.json', { cwd: path.dirname(this.filePath) });
 
-        if (jsonFiles !== null && jsonFiles.length >= 1) {
-            const jsonSplit = jsonFiles[0].split(path.sep);
+        if (jsonFile) {
+            const jsonSplit = jsonFile.split(path.sep);
 
             return jsonSplit.slice(0, jsonSplit.length - 2).join(path.sep);
         }

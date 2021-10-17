@@ -5,8 +5,8 @@ import * as os from 'os';
 
 export default class CodeActionProvider implements vscode.CodeActionProvider {
     private _commandIds = {
-        ctorFromProperties: 'csharpextensions.ctorFromProperties',
-        initializeMemberFromCtor: 'csharpextensions.initializeMemberFromCtor',
+        ctorFromProperties: 'seesharp.ctorFromProperties',
+        initializeMemberFromCtor: 'seesharp.initializeMemberFromCtor',
     };
 
     private readonly _readonlyRegex = new RegExp(/(public|private|protected)\s(\w+)\s(\w+)\s?{\s?(get;)\s?(private\s)?(set;)?\s?}/g);
@@ -83,7 +83,7 @@ export default class CodeActionProvider implements vscode.CodeActionProvider {
     private async formatDocument(documentUri: vscode.Uri, edit: vscode.WorkspaceEdit, edits: Array<vscode.TextEdit>) {
         edit.set(documentUri, edits);
 
-        const reFormatAfterChange = vscode.workspace.getConfiguration().get('csharpextensions.reFormatAfterChange', true);
+        const reFormatAfterChange = vscode.workspace.getConfiguration().get('seesharp.reFormatAfterChange', true);
 
         await vscode.workspace.applyEdit(edit);
 
@@ -229,8 +229,8 @@ export default class CodeActionProvider implements vscode.CodeActionProvider {
         if (!parameterType) return null;
 
         const tabSize = vscode.workspace.getConfiguration().get('editor.tabSize', 4);
-        const privateMemberPrefix = vscode.workspace.getConfiguration().get('csharpextensions.privateMemberPrefix', '');
-        const prefixWithThis = vscode.workspace.getConfiguration().get('csharpextensions.useThisForCtorAssignments', true);
+        const privateMemberPrefix = vscode.workspace.getConfiguration().get('seesharp.privateMemberPrefix', '');
+        const prefixWithThis = vscode.workspace.getConfiguration().get('seesharp.useThisForCtorAssignments', true);
 
         let memberGeneration: MemberGenerationProperties;
         let title: string;
