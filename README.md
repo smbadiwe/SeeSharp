@@ -7,6 +7,8 @@ Welcome to SeeSharp. This VSCode extension provides extensions to the IDE that w
 
 ### Some new and interesting features
 
+- Build project / solution
+- Clean project / solution
 - Add / Remove project references
 - Add / remove nuget packages
 - Create solution file

@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import * as childProcess from "child_process";
 
+export const EXT_NAME = 'SeeSharp';
+export const seeSharpChannel = vscode.window.createOutputChannel(EXT_NAME);
+
 type Terminal = vscode.Terminal | {
   name: string;
   sendText: (connamd: string) => Promise<void>;
@@ -68,7 +71,8 @@ export class NodejsTerminal extends Shell {
   }
 
   async sendText(command: string): Promise<void> {
-      await this.execute(command);
+    seeSharpChannel.appendLine(`[INFO] Executing command: '${command}'`);
+    await this.execute(command);
   }
 }
 
@@ -103,6 +107,7 @@ export class VsCodeTerminal extends Shell {
           }
       }
 
+      seeSharpChannel.appendLine(`[INFO] Executing command: '${commandText}'`);
       this.terminal.sendText(commandText);
       return Promise.resolve();
   }

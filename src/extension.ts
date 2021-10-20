@@ -19,6 +19,19 @@ const templateArgs = {
     'seesharp.createApiController': 'ApiController',
 };
 
+const compileCommands = {
+    // <command>: [<task>, configuration>]
+    'seesharp.buildDebug': ['build', 'Debug'],
+    'seesharp.buildRelease': ['build', 'Release'],
+    'seesharp.buildSolutionDebug': ['build', 'Debug'],
+    'seesharp.buildSolutionRelease': ['build', 'Release'],
+    'seesharp.cleanDebug': ['clean', 'Debug'],
+    'seesharp.cleanRelease': ['clean', 'Release'],
+    'seesharp.cleanSolutionDebug': ['clean', 'Debug'],
+    'seesharp.cleanSolutionRelease': ['clean', 'Release']
+};
+
+
 export function activate(context: vscode.ExtensionContext): void {
     const documentSelector: vscode.DocumentSelector = {
         language: 'csharp',
@@ -40,6 +53,11 @@ export function activate(context: vscode.ExtensionContext): void {
     for (const [command, [projectName, commandPrefix]] of Object.entries(newProjectCommands)) {
         context.subscriptions.push(vscode.commands.registerCommand(command,
             async () => await shellRuns.createNewProject(projectName, commandPrefix)));
+    }
+
+    for (const [command, [task, configuration]] of Object.entries(compileCommands)) {
+        context.subscriptions.push(vscode.commands.registerCommand(command,
+            async (args: any) => await shellRuns.compile(args, task, configuration)));
     }
 
     const temlating = new Templating();

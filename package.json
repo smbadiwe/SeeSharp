@@ -127,6 +127,26 @@
                 "category": "SeeSharp",
                 "command": "seesharp.buildSolutionRelease",
                 "title": "Build Solution (Release)"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.cleanDebug",
+                "title": "Clean Project"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.cleanRelease",
+                "title": "Clean Project (Release)"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.cleanSolutionDebug",
+                "title": "Clean Solution"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.cleanSolutionRelease",
+                "title": "Clean Solution (Release)"
             }
         ],
         "submenus": [
@@ -135,12 +155,16 @@
                 "label": "C# Options..."
             },
             {
-                "id": "seesharp.options.references",
-                "label": "References..."
-            },
-            {
                 "id": "seesharp.options.addnew",
                 "label": "New..."
+            },
+            {
+                "id": "seesharp.options.compile",
+                "label": "Compile..."
+            },
+            {
+                "id": "seesharp.options.references",
+                "label": "References..."
             }
         ],
         "menus": {
@@ -151,8 +175,14 @@
                 },
                 {
                     "group": "basic@1",
-                    "submenu": "seesharp.options.references"
+                    "submenu": "seesharp.options.compile"
                 },
+                {
+                    "group": "basic@2",
+                    "submenu": "seesharp.options.references"
+                }
+            ],
+            "seesharp.options.compile": [
                 {
                     "group": "build@0",
                     "command": "seesharp.buildDebug",
@@ -172,9 +202,27 @@
                     "group": "build@3",
                     "command": "seesharp.buildSolutionRelease",
                     "when": "explorerResourceIsFolder || resourceExtname == .sln"
+                },
+                {
+                    "group": "clean@0",
+                    "command": "seesharp.cleanDebug",
+                    "when": "explorerResourceIsFolder || resourceExtname != .sln"
+                },
+                {
+                    "group": "clean@1",
+                    "command": "seesharp.cleanRelease",
+                    "when": "explorerResourceIsFolder || resourceExtname != .sln"
+                },
+                {
+                    "group": "clean@2",
+                    "command": "seesharp.cleanSolutionDebug",
+                    "when": "explorerResourceIsFolder || resourceExtname == .sln"
+                },
+                {
+                    "group": "clean@3",
+                    "command": "seesharp.cleanSolutionRelease",
+                    "when": "explorerResourceIsFolder || resourceExtname == .sln"
                 }
-            ],
-            "seesharp.options.compile": [
             ],
             "seesharp.options.addnew": [
                 {

@@ -4,28 +4,26 @@ import { EOL } from 'os';
 import * as fs from 'fs';
 import CsprojReader from './csprojReader';
 import NamespaceDetector, { findUp } from './namespaceDetector';
-import { NodejsTerminal, VsCodeTerminal, getWorkspecePathIfAny } from './shell';
+import { EXT_NAME, NodejsTerminal, VsCodeTerminal, getWorkspecePathIfAny, seeSharpChannel } from './shell';
 
-const EXT_NAME = 'SeeSharp';
 const classnameRegex = new RegExp(/\${classname}/, 'g');
 const namespaceRegex = new RegExp(/\${namespace}/, 'g');
-const seeSharpChannel = vscode.window.createOutputChannel(EXT_NAME);
 
 class BaseCommander {
     showErrorMsg(msg: string, e: any = undefined) {
         console.error(msg, e);
-        seeSharpChannel.appendLine(`[ERROR}: ${msg}. ${e}`);
+        seeSharpChannel.appendLine(`[ERROR] ${msg}. ${e}`);
         vscode.window.showErrorMessage(`${msg}. See ${EXT_NAME} log for more details.`);
     }
 
     showInfoMsg(msg: string) {
         vscode.window.showInformationMessage(msg);
-        seeSharpChannel.appendLine(`[INFO]: ${msg}`);
+        seeSharpChannel.appendLine(`[INFO] ${msg}`);
     }
 
     showWarningMsg(msg: string) {
         vscode.window.showWarningMessage(msg);
-        seeSharpChannel.appendLine(`[WARN]: ${msg}`);
+        seeSharpChannel.appendLine(`[WARN] ${msg}`);
     }
         
     private getDefaultArgs() {
@@ -292,14 +290,24 @@ export class ShellRuns extends BaseCommander {
         }
     }
   
-    async compile(args: any, configuration: string = 'Debug') {
+    async compile(args: any, task: string, configuration: string = 'Debug') {
+        /**
+         * @param task can be either of 'build', 'clean'.
+         * @param configuration can be either of 'Debug', 'Release'.
+         */
         let incomingpath = this.getIncomingPath(args);
-        const pathExt = path.extname(incomingpath);
         let commandText;
-        if (['.sln', '.csproj'].includes(pathExt)) {
-            commandText = `dotnet build "${incomingpath}" --configuration ${configuration}`;
+        if (['.sln', '.csproj'].includes(path.extname(incomingpath))) {
+            commandText = `dotnet ${task} "${incomingpath}" --configuration ${configuration}`;
         } else {
-            commandText = `dotnet build --configuration ${configuration}`;
+            commandText = `dotnet ${task} --configuration ${configuration}`;
+        }
+        try {
+            const terminal = this.getTerminal(await this.ensureIsDirectory(incomingpath));
+            await terminal.sendText(commandText);
+            this.showInfoMsg(`${task} (${configuration}) successful.`);
+        } catch (e) {
+            this.showErrorMsg(`${task} (${configuration}) failed.`, e);
         }
     }
 
