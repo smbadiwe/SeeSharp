@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext): void {
         scheme: 'file'
     };
     const shellRuns = new ShellRuns();
-
+    
     context.subscriptions.push(vscode.commands.registerCommand('seesharp.createSolution',
         async () => await shellRuns.createNewFile('Solution File', 'dotnet new sln -n')));
     context.subscriptions.push(vscode.commands.registerCommand('seesharp.addProjectReference',

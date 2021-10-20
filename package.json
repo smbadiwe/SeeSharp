@@ -272,7 +272,7 @@
                 {
                     "submenu": "seesharp.options",
                     "group": "navigation@-1",
-                    "when": "resourceLangId == csharp"
+                    "when": "explorerResourceIsFolder || resourceExtname == .cs || resourceExtname == .csproj || resourceExtname == .sln || resourceExtname == .cshtml"
                 }
             ]
         },
