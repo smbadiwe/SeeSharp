@@ -4,11 +4,66 @@ import { EOL } from 'os';
 import * as fs from 'fs';
 import CsprojReader from './csprojReader';
 import NamespaceDetector, { findUp } from './namespaceDetector';
+import { NodejsTerminal, VsCodeTerminal, getWorkspecePathIfAny } from './shell';
 
+const EXT_NAME = 'SeeSharp';
 const classnameRegex = new RegExp(/\${classname}/, 'g');
 const namespaceRegex = new RegExp(/\${namespace}/, 'g');
+const seeSharpChannel = vscode.window.createOutputChannel(EXT_NAME);
 
-export class Templating {
+class BaseCommander {
+    showErrorMsg(msg: string, e: any = undefined) {
+        console.error(msg, e);
+        seeSharpChannel.appendLine(`[ERROR}: ${msg}. ${e}`);
+        vscode.window.showErrorMessage(`${msg}. See ${EXT_NAME} log for more details.`);
+    }
+
+    showInfoMsg(msg: string) {
+        vscode.window.showInformationMessage(msg);
+        seeSharpChannel.appendLine(`[INFO]: ${msg}`);
+    }
+
+    showWarningMsg(msg: string) {
+        vscode.window.showWarningMessage(msg);
+        seeSharpChannel.appendLine(`[WARN]: ${msg}`);
+    }
+        
+    private getDefaultArgs() {
+        const activeFile = vscode.window.activeTextEditor?.document.fileName;
+
+        return {
+            _fsPath: activeFile || getWorkspecePathIfAny()
+        };
+    }
+
+    getIncomingPath(args: any): string {
+        if (!args) {
+            args = this.getDefaultArgs();
+        }
+
+        return args._fsPath || args.fsPath || args.path;
+    }
+
+    async getIncomingDirectory(args: any) {
+        return await this.ensureIsDirectory(this.getIncomingPath(args));
+    }
+
+    async ensureIsDirectory(incomingpath: string) {
+        let isDirectory = false;
+        try {
+            isDirectory = (await fs.promises.lstat(incomingpath)).isDirectory();
+        } catch { }
+        if (!isDirectory) {
+            incomingpath = path.dirname(incomingpath);
+        }
+
+        return incomingpath;
+    }
+
+
+}
+
+export class Templating extends BaseCommander {
     public async createCodeFileFromTemplate(args: any, templatetype: string) {
         try {
             const promptFilename = `new${templatetype}.cs`;
@@ -21,14 +76,14 @@ export class Templating {
         
             if (!newfilename) return;
 
-            const incomingpath = await getIncomingDirectory(args);
+            const incomingpath = await this.getIncomingDirectory(args);
 
             let newfilepath = incomingpath + path.sep + newfilename;
 
             newfilepath = this.correctExtension(newfilepath);
 
             if (fs.existsSync(newfilepath)) {
-                vscode.window.showErrorMessage(`File already exists: ${EOL}${newfilepath}`);
+                this.showErrorMsg(`File already exists: ${EOL}${newfilepath}`);
                 
                 return;
             }
@@ -38,19 +93,17 @@ export class Templating {
             const typename = path.basename(newfilepath, '.cs');
 
             await this.openTemplateAndSaveNewFile(templatetype, namespace, typename, newfilepath);
-        } catch (errOnInput) {
-            console.error('Error on input', errOnInput);
-
-            vscode.window.showErrorMessage('Error on input. See extensions log for more info');
+        } catch (e) {
+            this.showErrorMsg('Error on input.', e);
         }
     }
 
     private async openTemplateAndSaveNewFile(type: string, namespace: string, filename: string, originalfilepath: string) {
         const templatefileName = type + '.tmpl';
-        const extension = vscode.extensions.getExtension('Soma Mbadiwe.SeeSharp');
+        const extension = vscode.extensions.getExtension(`Soma Mbadiwe.${EXT_NAME}`);
   
         if (!extension) {
-            vscode.window.showErrorMessage('Weird, but the extension you are currently using could not be found');
+            this.showErrorMsg('Weird, but the extension you are currently using could not be found');
   
             return;
         }
@@ -99,9 +152,7 @@ export class Templating {
         } catch (errTryingToCreate) {
             const errorMessage = `Error trying to create file '${originalfilepath}' from template '${templatefileName}'`;
   
-            console.error(errorMessage, errTryingToCreate);
-  
-            vscode.window.showErrorMessage(errorMessage);
+            this.showErrorMsg(errorMessage, errTryingToCreate);
         }
     }
   
@@ -128,18 +179,31 @@ export class Templating {
     }
 }
 
-export class ShellRuns {
+
+export class ShellRuns extends BaseCommander {
+    private getTerminal(cwd: string | undefined = undefined) {
+        const useVSCodeTerminal = vscode.workspace.getConfiguration().get('seesharp.useVSCodeTerminal', true);
+        if (useVSCodeTerminal) {
+            return new VsCodeTerminal(cwd);
+        }
+
+        return new NodejsTerminal(cwd);
+    }
 
     async addNugetPackage(args: any) {
-        const startDir = await getIncomingDirectory(args);
+        const startDir = await this.getIncomingDirectory(args);
         const currentProjectFile = await findUp('*.csproj', { cwd: startDir });
         if (!currentProjectFile) {
-            vscode.window.showWarningMessage('Project file not found. Aborting.');
+            this.showWarningMsg('Project file not found. Aborting.');
             
             return;
         }
   
-        await this.runOneArgCommand('nuget package', 'dotnet add package', path.dirname(currentProjectFile));
+        await this.runOneArgCommand({
+            projectName: 'nuget package', 
+            commandPrefix: 'dotnet add package', 
+            cwd: path.dirname(currentProjectFile)
+        });
     }
   
     async removeNugetPackage(args: any) {
@@ -153,7 +217,7 @@ export class ShellRuns {
     }
 
     async addProjectReference(args: any) {
-        const startDir = await getIncomingDirectory(args);
+        const startDir = await this.getIncomingDirectory(args);
         const currentProjectFile = await findUp('*.csproj', { cwd: startDir });
         if (!currentProjectFile) return;
   
@@ -169,16 +233,13 @@ export class ShellRuns {
   
         const projectFile = selected[0].fsPath;
         if (projectFile === currentProjectFile) {
-            vscode.window.showErrorMessage('You should not add project as a reference to itself');
+            this.showErrorMsg('You should not add project as a reference to itself');
             
             return;
         }
   
-        const terminal = vscode.window.createTerminal({
-            name: 'SeeSharp',
-            cwd: path.dirname(currentProjectFile)
-        });
-        terminal.sendText(`dotnet add reference "${projectFile}"`);
+        const terminal = this.getTerminal(path.dirname(currentProjectFile));
+        await terminal.sendText(`dotnet add reference "${projectFile}"`);
     }
   
     async removeProjectReference(args: any) {
@@ -186,10 +247,10 @@ export class ShellRuns {
     }
 
     private async removeReference(args: any, refType: string) {
-        const startDir = await getIncomingDirectory(args);
+        const startDir = await this.getIncomingDirectory(args);
         const currentProjectFile = await findUp('*.csproj', { cwd: startDir });
         if (!currentProjectFile) {
-            vscode.window.showWarningMessage('Project file not found. Aborting.');
+            this.showWarningMsg('Project file not found. Aborting.');
             
             return;
         }
@@ -221,30 +282,42 @@ export class ShellRuns {
             });
             if (!selected) return;
       
-            const terminal = vscode.window.createTerminal({
-                cwd: path.dirname(currentProjectFile),
-                name: 'SeeSharp'
-            });
+            const terminal = this.getTerminal(path.dirname(currentProjectFile));
             const prop = isForPackage ? 'package' : 'reference';
             const selectedValue = isForPackage ? selected.label : selected.detail;
-            terminal.sendText(`dotnet remove ${prop} "${selectedValue}"`);
-            vscode.window.showInformationMessage(` ${refType} "${selectedValue}" removed successfully.`);
+            await terminal.sendText(`dotnet remove ${prop} "${selectedValue}"`);
+            this.showInfoMsg(`${refType} "${selectedValue}" removed successfully.`);
         } catch (e) {
-            console.error(`Error removing  ${refType}.`, e);
-            vscode.window.showErrorMessage(`Error removing  ${refType}. See log for details.`);
+            this.showErrorMsg(`Error removing  ${refType}.`, e);
         }
     }
   
-    async createNewProject(projectName: string, commandPrefix: string, cwd = '') {
-        await this.runOneArgCommand(projectName, commandPrefix, cwd, true);
+    async compile(args: any, configuration: string = 'Debug') {
+        let incomingpath = this.getIncomingPath(args);
+        const pathExt = path.extname(incomingpath);
+        let commandText;
+        if (['.sln', '.csproj'].includes(pathExt)) {
+            commandText = `dotnet build "${incomingpath}" --configuration ${configuration}`;
+        } else {
+            commandText = `dotnet build --configuration ${configuration}`;
+        }
     }
 
-    async runOneArgCommand(
+    async createNewProject(projectName: string, commandPrefix: string, cwd = '') {
+        await this.runOneArgCommand({ projectName, commandPrefix, cwd, addToSolution: true });
+    }
+
+    async runOneArgCommand({
+        projectName, 
+        commandPrefix,
+        cwd = '', 
+        addToSolution = false
+    }: {
         projectName: string, 
         commandPrefix: string,
-        cwd = '', 
-        addToSolution = true
-    ) {
+        cwd?: string, 
+        addToSolution?: boolean
+    }) {
         const promptName = `${projectName.replace(' ', '')}1`;
         const objectName = await vscode.window.showInputBox({
             ignoreFocusOut: true,
@@ -256,12 +329,8 @@ export class ShellRuns {
         if (!objectName) return;
   
         try {
-            const terminal = vscode.window.createTerminal({
-                cwd: addToSolution ? '' : cwd,
-                name: 'SeeSharp'
-            });
-        
-            terminal.sendText(`${commandPrefix} ${objectName}`);
+            const terminal = this.getTerminal(addToSolution ? '' : cwd);
+            await terminal.sendText(`${commandPrefix} ${objectName}`);
   
             if (addToSolution) {
                 const startDir = getWorkspecePathIfAny() || __dirname;
@@ -269,16 +338,15 @@ export class ShellRuns {
   
                 if (!solutionFile) {
                     const slnName = path.basename(startDir);
-                    vscode.window.showInformationMessage(`Creating solution: ${slnName}.`);
-                    terminal.sendText(`dotnet new sln -n ${slnName}`);
+                    this.showInfoMsg(`Creating solution: ${slnName}.`);
+                    await terminal.sendText(`dotnet new sln -n ${slnName}`);
                 }
-                terminal.sendText(`dotnet sln add ${path.join(objectName, objectName + '.csproj')}`);
+                await terminal.sendText(`dotnet sln add ${path.join(objectName, objectName + '.csproj')}`);
             }
   
-            vscode.window.showInformationMessage(`${projectName} "${objectName}" processing succeeded.`);
+            this.showInfoMsg(`${projectName} "${objectName}" processing succeeded.`);
         } catch (err) {
-            console.error('Error executing command:', err);
-            vscode.window.showErrorMessage('Error executing command. See extensions log for more info');
+            this.showErrorMsg('Error executing command.', err);
         }
     }
   
@@ -294,44 +362,12 @@ export class ShellRuns {
         if (!objectName) return;
   
         try {
-            const terminal = vscode.window.createTerminal('SeeSharp');
-            terminal.sendText(`${commandPrefix} ${objectName}`);
-            vscode.window.showInformationMessage(`${projectName} "${objectName}" created.`);
+            const terminal = this.getTerminal();
+            await terminal.sendText(`${commandPrefix} ${objectName}`);
+            this.showInfoMsg(`${projectName} "${objectName}" created.`);
         } catch (err) {
-            console.error('Error executing command:', err);
-            vscode.window.showErrorMessage('Error executing command. See extensions log for more info');
+            this.showErrorMsg('Error executing command.', err);
         }
     }
   
 }
-
-function getWorkspecePathIfAny() {
-    return vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length
-        ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
-}
-
-function getDefaultArgs() {
-    const activeFile = vscode.window.activeTextEditor?.document.fileName;
-
-    return {
-        _fsPath: activeFile || getWorkspecePathIfAny()
-    };
-}
-
-async function getIncomingDirectory(args: any) {
-    if (!args) {
-        args = getDefaultArgs();
-    }
-
-    let incomingpath: string = args._fsPath || args.fsPath || args.path;
-    let isDirectory = false;
-    try {
-        isDirectory = (await fs.promises.lstat(incomingpath)).isDirectory();
-    } catch { }
-    if (!isDirectory) {
-        incomingpath = path.dirname(incomingpath);
-    }
-
-    return incomingpath;
-}
-

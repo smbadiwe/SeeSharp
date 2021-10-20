@@ -31,7 +31,9 @@
         "onCommand:seesharp.addNugetPackage",
         "onCommand:seesharp.addProjectReference",
         "onCommand:seesharp.removeNugetPackage",
-        "onCommand:seesharp.removeProjectReference"
+        "onCommand:seesharp.removeProjectReference",
+        "onCommand:seesharp.buildDebug",
+        "onCommand:seesharp.buildRelease"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -105,16 +107,76 @@
                 "category": "SeeSharp",
                 "command": "seesharp.removeProjectReference",
                 "title": "Remove Project Reference"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.buildDebug",
+                "title": "Build Project"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.buildRelease",
+                "title": "Build Project (Release)"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.buildSolutionDebug",
+                "title": "Build Solution"
+            },
+            {
+                "category": "SeeSharp",
+                "command": "seesharp.buildSolutionRelease",
+                "title": "Build Solution (Release)"
             }
         ],
         "submenus": [
             {
                 "id": "seesharp.options",
                 "label": "C# Options..."
+            },
+            {
+                "id": "seesharp.options.references",
+                "label": "References..."
+            },
+            {
+                "id": "seesharp.options.addnew",
+                "label": "New..."
             }
         ],
         "menus": {
             "seesharp.options": [
+                {
+                    "group": "basic@0",
+                    "submenu": "seesharp.options.addnew"
+                },
+                {
+                    "group": "basic@1",
+                    "submenu": "seesharp.options.references"
+                },
+                {
+                    "group": "build@0",
+                    "command": "seesharp.buildDebug",
+                    "when": "explorerResourceIsFolder || resourceExtname != .sln"
+                },
+                {
+                    "group": "build@1",
+                    "command": "seesharp.buildRelease",
+                    "when": "explorerResourceIsFolder || resourceExtname != .sln"
+                },
+                {
+                    "group": "build@2",
+                    "command": "seesharp.buildSolutionDebug",
+                    "when": "explorerResourceIsFolder || resourceExtname == .sln"
+                },
+                {
+                    "group": "build@3",
+                    "command": "seesharp.buildSolutionRelease",
+                    "when": "explorerResourceIsFolder || resourceExtname == .sln"
+                }
+            ],
+            "seesharp.options.compile": [
+            ],
+            "seesharp.options.addnew": [
                 {
                     "group": "basics@0",
                     "command": "seesharp.createClass"
@@ -134,7 +196,9 @@
                 {
                     "group": "mvc@1",
                     "command": "seesharp.createApiController"
-                },
+                }
+            ],
+            "seesharp.options.references": [
                 {
                     "group": "ref@0",
                     "command": "seesharp.addNugetPackage",
@@ -165,7 +229,7 @@
             ]
         },
         "configuration": {
-            "title": "C# Extensions configuration",
+            "title": "SeeSharp configuration",
             "properties": {
                 "seesharp.privateMemberPrefix": {
                     "type": "string",
@@ -186,6 +250,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "If created classes should include default namespaces"
+                },
+                "seesharp.useVSCodeTerminal": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, use terminal within VSCode to execute commands"
                 }
             }
         }
