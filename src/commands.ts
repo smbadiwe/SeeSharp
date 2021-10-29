@@ -57,8 +57,6 @@ class BaseCommander {
 
         return incomingpath;
     }
-
-
 }
 
 export class Templating extends BaseCommander {
@@ -98,7 +96,7 @@ export class Templating extends BaseCommander {
 
     private async openTemplateAndSaveNewFile(type: string, namespace: string, filename: string, originalfilepath: string) {
         const templatefileName = type + '.tmpl';
-        const extension = vscode.extensions.getExtension(`Soma Mbadiwe.${EXT_NAME}`);
+        const extension = vscode.extensions.getExtension(`smbadiwe.${EXT_NAME}`);
   
         if (!extension) {
             this.showErrorMsg('Weird, but the extension you are currently using could not be found');
